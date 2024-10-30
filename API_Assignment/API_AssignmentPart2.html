@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED Control</title>
+    <script>
+        function toggleLED(state) {
+            fetch(`https://limegreen-ibex-462177.hostingersite.com/getlightstatus.php?ledControl=${state}`, {
+                method: 'PUT'
+            })
+            .then(response => response.text())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+        }
+
+        function setRGB() {
+            const r = document.getElementById("red").value;
+            const g = document.getElementById("green").value;
+            const b = document.getElementById("blue").value;
+
+            fetch(`https://limegreen-ibex-462177.hostingersite.com/getlightstatus.php?r=${r}&g=${g}&b=${b}`, {
+                method: 'PUT'
+            })
+            .then(response => response.text())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</head>
+<body>
+    <h1>Control LEDs</h1>
+    <button onclick="toggleLED('ON')">Turn ON LED</button>
+    <button onclick="toggleLED('OFF')">Turn OFF LED</button>
+    
+    <h2>RGB LED Control</h2>
+    <label>Red: <input type="range" id="red" min="0" max="255"></label><br>
+    <label>Green: <input type="range" id="green" min="0" max="255"></label><br>
+    <label>Blue: <input type="range" id="blue" min="0" max="255"></label><br>
+    <button onclick="setRGB()">Update RGB LED</button>
+
+    <p><a href="default.php" style="color: #005EB8;">Return to home</a></p>
+</body>
+</html>
