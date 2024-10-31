@@ -11,6 +11,24 @@ const int greenPin = 4; // Pin for the green RGB LED
 const int bluePin = 0;  // Pin for the blue RGB LED
 const int ledPin = 15; // Pin D8 for normal LED
 
+void connectWiFi() {
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(1000);
+        Serial.println("Connecting to WiFi...");
+    }
+    Serial.println("Connected to WiFi ");
+}
+
+void setup() {
+    pinMode(redPin, OUTPUT);
+    pinMode(greenPin, OUTPUT);
+    pinMode(bluePin, OUTPUT);
+    Serial.begin(9600);
+    connectWiFi();                      //Connect to WIFI
+    Serial.println("End of setup");
+}
+
 void setColor(int red, int green, int blue) {
     analogWrite(redPin, red);
     analogWrite(greenPin, green);
@@ -18,23 +36,8 @@ void setColor(int red, int green, int blue) {
     pinMode(ledPin, OUTPUT);
 }
 
-void connectWiFi() {
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(1000);
-        Serial.println("Connecting to WiFi...");
-    }
-    Serial.println("Connected to WiFi");
-}
-
-void loop() {
-    Serial.println("Test");
-    fetchLEDStatus();  // Fetch LED status and RGB values
-    delay(10000);       // Wait for 10 seconds before checking again
-}
-
 void fetchLEDStatus() {
-    
+    if (WiFi.status() == WL_CONNECTED) {
         HTTPClient http;
         WiFiClientSecure client;
         client.setInsecure();
@@ -42,13 +45,13 @@ void fetchLEDStatus() {
         String url = "https://limegreen-ibex-462177.hostingersite.com/updatelights.php";
         Serial.println("Connecting to the following URL:");
         Serial.println(url); 
-        if (WiFi.status() == WL_CONNECTED) {  
+          
             http.begin(client,url);
             int httpCode = http.GET();
         
         if (httpCode > 0) {
-            Serial.print("HTTP Code: ");
-            Serial.println(httpCode);
+            //Serial.print("HTTP Code: ");
+            //Serial.println(httpCode);
             String payload = http.getString();
             Serial.println("Data received: " + payload);
 
@@ -62,10 +65,14 @@ void fetchLEDStatus() {
                 int r = doc["RGB"]["R"];
                 int g = doc["RGB"]["G"];
                 int b = doc["RGB"]["B"];
+                    Serial.print("RGB values: ");
+                    Serial.print("R: ");
                     Serial.print(r);
+                    Serial.print(" G: ");
                     Serial.print(g);
-                    Serial.print(b);
-
+                    Serial.print(" B: ");
+                    Serial.println(b);
+                        
                 // Set LED and RGB values
                 digitalWrite(ledPin, (strcmp(ledState, "ON") == 0) ? HIGH : LOW);
                 setColor(r, g, b);
@@ -80,11 +87,12 @@ void fetchLEDStatus() {
         Serial.println("WiFi not connected");
     }
 }
-void setup() {
-    pinMode(redPin, OUTPUT);
-    pinMode(greenPin, OUTPUT);
-    pinMode(bluePin, OUTPUT);
-    Serial.begin(9600);
-    connectWiFi();                      //Connect to WIFI
+
+void loop() {
+    fetchLEDStatus();  // Fetch LED status and RGB values
+    delay(10000);       // Wait for 100 seconds before checking again
 }
+
+
+
 
